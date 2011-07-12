@@ -1,0 +1,9 @@
+REST service benchmark contest reference implementation project.
+
+Run with:
+mvn jetty:run
+
+You could also package your own .war and deploy to somewhere.
+
+This implementation is HashTable backed and loads an initial set of data from src/main/resources/data.json. Newly put data is volatile and will only be available as long as the service lives. Also, this implementation is not safe to use as a distributable web app or in a container that has multiple servlet instances in different class loading contexts or other magic that does not play nice with a static final HashMap...
+
