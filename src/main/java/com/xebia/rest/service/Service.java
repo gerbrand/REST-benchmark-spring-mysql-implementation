@@ -80,6 +80,8 @@ public class Service {
                 long elapsed=(System.currentTimeMillis()-start)/1000l;
                 log.info("Finished reading after "+elapsed+" seconds");
             }
+        } else {
+            log.info("If you want to read initial data, create a file named "+dataFile.getAbsolutePath());
         }
     }
     
