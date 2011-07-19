@@ -1,11 +1,10 @@
 package com.xebia.rest.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.io.*;
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -20,25 +19,33 @@ import com.xebia.rest.model.Record;
 
 @Controller
 public class Service {
-	private static final Map<Long, Record> db;
-	static {
-		db = new HashMap<Long, Record>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(Service.class.getResourceAsStream("/data.json")));
-		try {
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				ObjectMapper mapper = new ObjectMapper();
-				Record record = mapper.readValue(line, Record.class);
-				db.put(record.getId(), record);
-			}
-		} catch (IOException e) {
-			System.err.println("Could not load database from classpath. Exiting.");
-			System.exit(1);
-		}
-	}
+    
+    @PersistenceContext
+    private EntityManager em;
+
 	
+    @PostConstruct
+    public void buildDatabase() throws FileNotFoundException {
+        File dataFile = new File("/tmp/data.json");
+        if (dataFile.exists()) {
+            BufferedReader br = new BufferedReader(new FileReader(dataFile));
+            try {
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Record record = mapper.readValue(line, Record.class);
+                    em.persist(record);
+                }
+               
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
 	public @ResponseBody Record get(@PathVariable long id, HttpServletResponse response) throws IOException {
-    	Record result = db.get(id);
+    	Record result = em.find(Record.class, id);
     	if (result == null) {
     		response.sendError(404, "Record with id=" + id + " is not in database.");
     		return null;
@@ -49,10 +56,16 @@ public class Service {
     
     @RequestMapping(value = "/put/{id}", method = RequestMethod.POST)
     public void put(@PathVariable long id, @RequestBody Record record, HttpServletResponse response) throws IOException {
-    	if (record.getId() != id) {
+    	
+        if (record.getId() != id) {
     		response.sendError(409, "The resource ID and ID of the POSTed record do not match.");
     	} else {
-    		db.put(id, record);
+    		Record savedRecord = em.merge(record);
     	}
+    }
+    
+    @RequestMapping(value = "/post/{id}", method = RequestMethod.POST)
+    public void post(@PathVariable long id, @RequestBody Record record, HttpServlet response) {
+        em.persist(record);
     }
 }

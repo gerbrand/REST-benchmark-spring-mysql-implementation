@@ -35,10 +35,10 @@ public class PersistenceTest {
     @Transactional(readOnly=false)
     public void persisting() {
         //long id, String shortStringAttribute, String longStringAttribute, int intNumber, boolean trueOrFalse) {
-        Record r=new Record(1234,"Blah", "Blah blah",22,false);
+        Record r=new Record(1234L,"Blah", "Blah blah",22,false);
         entityManager.persist(r);
         
-        Record found=entityManager.find(Record.class, 1234);
+        Record found=entityManager.find(Record.class, 1234L);
         assertNotNull("Record is niet goed opgeslagen", found);
     }
 
