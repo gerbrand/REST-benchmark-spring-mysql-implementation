@@ -41,8 +41,9 @@ public class Service {
         if (dataFile.exists()) {
             tx.begin();
             BufferedReader br = new BufferedReader(new FileReader(dataFile));
+            int lines=0;
+            long start=System.currentTimeMillis();
             try {
-                int lines=0;
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     ObjectMapper mapper = new ObjectMapper();
                     Record record = mapper.readValue(line, Record.class);
@@ -53,10 +54,15 @@ public class Service {
                         log.debug("Wrote "+lines+" lines");
                     }
                 }
-            tx.commit();
             
+                tx.commit();
             } catch (IOException e) {
+                log.error("Got "+e.getMessage()+" after "+lines+" lines.");
+                tx.rollback();
                 throw new RuntimeException(e);
+            } finally {
+                long elapsed=(System.currentTimeMillis()-start)/1000l;
+                log.info("Finished reading after "+elapsed+" seconds");
             }
         }
     }
