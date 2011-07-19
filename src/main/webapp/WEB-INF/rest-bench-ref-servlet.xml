@@ -11,39 +11,7 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd" default-autowire="byName">
 
-<!--
-	<bean id="placeholderConfig"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath://db.properties" />
-	</bean>
-	
-	<bean id="dao" class="com.xebia.rest.SqlDbDao">
-		<constructor-arg>
-			<value>localhost</value>
-		</constructor-arg>
-	</bean>
--->
-    <context:component-scan base-package="com.xebia.rest"/>
+    <import resource="classpath:applicationContext.xml"/>
 
-<!--    <bean id="blogRepository" class="com.xebia.blogr.mongo.MongoBlogRepository"/>-->
-
-    <bean id="messageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-        <property name="messageConverters">
-            <list>
-                <!-- Support JSON -->
-                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
-            </list>
-        </property>
-    </bean>
-    <bean id="exceptionMessageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
-        <property name="messageConverters">
-            <list>
-                <!-- Support JSON -->
-                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
-            </list>
-        </property>
-    </bean>
-
-    <mvc:annotation-driven/>
 
 </beans>

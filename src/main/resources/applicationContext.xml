@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        " default-autowire="byName">
+    
+<!--
+	<bean id="placeholderConfig"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath://db.properties" />
+	</bean>
+	
+	<bean id="dao" class="com.xebia.rest.SqlDbDao">
+		<constructor-arg>
+			<value>localhost</value>
+		</constructor-arg>
+	</bean>
+-->
+	<context:component-scan base-package="com.xebia.rest" />
+	<mvc:annotation-driven />
+	<context:annotation-config />
+	<aop:aspectj-autoproxy />
+
+<!--    <bean id="blogRepository" class="com.xebia.blogr.mongo.MongoBlogRepository"/>-->
+
+    <bean id="messageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <!-- Support JSON -->
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+    <bean id="exceptionMessageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
+        <property name="messageConverters">
+            <list>
+                <!-- Support JSON -->
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+
+ 
+    <!-- JPA -->
+    <!-- TODO use property file for db specific settings -->
+    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+    <tx:annotation-driven />
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/> 
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="showSql" value="true" /> <!-- Prints used SQL to stdout -->
+                <property name="generateDdl" value="true" /> <!-- Generates tables. -->
+                <property name="databasePlatform" value="org.hibernate.dialect.MySQL5Dialect" />
+            </bean>
+        </property>
+    </bean>
+    <bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+        <property name="url" value="jdbc:mysql://10.0.0.112:benchmark" />
+        <property name="user" value="root" />
+        <property name="password" value="root" />
+    </bean>
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+</beans>
