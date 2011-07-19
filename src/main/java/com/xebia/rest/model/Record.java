@@ -2,24 +2,31 @@ package com.xebia.rest.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Record {
-	@JsonProperty
+	
+    @JsonProperty @Id    
 	private long id;
 	
-	@JsonProperty
+	@JsonProperty @Column(nullable = false)
 	private String shortStringAttribute;
 	
-	@JsonProperty
+	@JsonProperty @Column(nullable = false)
 	private String longStringAttribute;
 	
-	@JsonProperty
+	@JsonProperty @Column(nullable = false)
 	private int intNumber;
 	
-	@JsonProperty
+	@JsonProperty @Column(nullable = false)
 	private boolean trueOrFalse;
 	
 	public Record() {
 		//Jackson requires this!
+        // Hibernate too!!
 	}
 	
 	public Record(long id, String shortStringAttribute, String longStringAttribute, int intNumber, boolean trueOrFalse) {
