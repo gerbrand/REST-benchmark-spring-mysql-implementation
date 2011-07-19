@@ -69,7 +69,7 @@
         </property>
     </bean>
     <bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
-        <property name="url" value="jdbc:mysql://10.0.0.112:benchmark" />
+        <property name="url" value="jdbc:mysql://10.0.0.112:3306/benchmark" />
         <property name="user" value="root" />
         <property name="password" value="root" />
     </bean>
