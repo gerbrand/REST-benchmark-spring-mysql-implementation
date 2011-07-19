@@ -4,16 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.TransactionManager;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -22,6 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -88,6 +88,7 @@ public class Service {
     
     
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    @Transactional(readOnly=true)
 	public @ResponseBody Record get(@PathVariable long id, HttpServletResponse response) throws IOException {
     	Record result = em.find(Record.class, id);
     	if (result == null) {
@@ -99,18 +100,24 @@ public class Service {
 	}
     
     @RequestMapping(value = "/put/{id}", method = RequestMethod.POST)
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public void put(@PathVariable long id, @RequestBody Record record, HttpServletResponse response) throws IOException {
     	
         if (record.getId() != id) {
     		response.sendError(409, "The resource ID and ID of the POSTed record do not match.");
     	} else {
-    		Record savedRecord = em.merge(record);
+    		em.merge(record);
     	}
     }
     
     @RequestMapping(value = "/post/{id}", method = RequestMethod.POST)
-    public void post(@PathVariable long id, @RequestBody Record record, HttpServlet response) {
-        em.persist(record);
+    @Transactional(isolation=Isolation.READ_COMMITTED)
+    public void post(@PathVariable long id, @RequestBody Record record, HttpServletResponse response) throws IOException {
+        try {
+            em.persist(record);
+        } catch (EntityExistsException e) {
+            response.sendError(500, "The resource "+id+" already exists");
+        }
     }
     
     public static void main(String[] args) {
