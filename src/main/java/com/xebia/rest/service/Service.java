@@ -35,7 +35,7 @@ import com.xebia.rest.model.Record;
 public class Service {
     private static final Logger log=LoggerFactory.getLogger(Service.class);
     
-    private static final int FLUSH_THRESHOLD=20;
+    private static final int COMMIT_THRESHOLD=250; //what would an optional value be?
     @PersistenceContext
     private EntityManager em;
     @Resource
@@ -64,13 +64,14 @@ public class Service {
                     Record record = mapper.readValue(line, Record.class);
                     em.merge(record);
                     lines++;
-                    if (lines%FLUSH_THRESHOLD==0) {
+                    if (lines%COMMIT_THRESHOLD==0) {
                         txManager.commit(status); //in between commits
                         log.debug("Wrote "+lines+" lines");
                     }
                 }
-            
-                txManager.commit(status);
+                if (lines%COMMIT_THRESHOLD!=0) {
+                    txManager.commit(status);
+                }
                 log.info("File "+dataFile.getAbsolutePath()+" is imported, you may remove the file.");
 //                dataFile.renameTo(new File(dataFile.getParentFile(),"data"+DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date())+".json"));
             } catch (IOException e) {
