@@ -71,7 +71,8 @@ public class Service {
                 }
             
                 txManager.commit(status);
-                dataFile.renameTo(new File(dataFile.getParentFile(),"data"+DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date())+".json"));
+                log.info("File "+dataFile.getAbsolutePath()+" is imported, you may remove the file.");
+//                dataFile.renameTo(new File(dataFile.getParentFile(),"data"+DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date())+".json"));
             } catch (IOException e) {
                 log.error("Got "+e.getMessage()+" after "+lines+" lines.");
                 txManager.rollback(status);
