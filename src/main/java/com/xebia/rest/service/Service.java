@@ -62,7 +62,7 @@ public class Service {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     ObjectMapper mapper = new ObjectMapper();
                     Record record = mapper.readValue(line, Record.class);
-                    em.persist(record);
+                    em.merge(record);
                     lines++;
                     if (lines%FLUSH_THRESHOLD==0) {
                         txManager.commit(status); //in between commits
