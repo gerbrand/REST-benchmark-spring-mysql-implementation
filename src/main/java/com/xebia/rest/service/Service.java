@@ -1,10 +1,15 @@
 package com.xebia.rest.service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -14,8 +19,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,34 +38,43 @@ public class Service {
     private static final int FLUSH_THRESHOLD=20;
     @PersistenceContext
     private EntityManager em;
-    
+    @Resource
+    private PlatformTransactionManager txManager;
 
     @PostConstruct
-    public void buildDatabase() throws FileNotFoundException {
-        EntityTransaction tx = em.getTransaction();
- 
+    public void buildDatabase() throws Exception {
+        
         File dataFile = new File("/tmp/data.json");
         if (dataFile.exists()) {
-            tx.begin();
+            log.info("Going to read "+dataFile.getAbsoluteFile());
             BufferedReader br = new BufferedReader(new FileReader(dataFile));
             int lines=0;
             long start=System.currentTimeMillis();
-            try {
+
+            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+         // explicitly setting the transaction name is something that can only be done programmatically
+         def.setName("importTx");
+         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+
+         TransactionStatus status = txManager.getTransaction(def);
+         
+         try {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     ObjectMapper mapper = new ObjectMapper();
                     Record record = mapper.readValue(line, Record.class);
                     em.persist(record);
                     lines++;
                     if (lines%FLUSH_THRESHOLD==0) {
-                        tx.commit(); //in between commits
+                        txManager.commit(status); //in between commits
                         log.debug("Wrote "+lines+" lines");
                     }
                 }
             
-                tx.commit();
+                txManager.commit(status);
+                dataFile.renameTo(new File(dataFile.getParentFile(),"data"+DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date())+".json"));
             } catch (IOException e) {
                 log.error("Got "+e.getMessage()+" after "+lines+" lines.");
-                tx.rollback();
+                txManager.rollback(status);
                 throw new RuntimeException(e);
             } finally {
                 long elapsed=(System.currentTimeMillis()-start)/1000l;
@@ -92,5 +108,9 @@ public class Service {
     @RequestMapping(value = "/post/{id}", method = RequestMethod.POST)
     public void post(@PathVariable long id, @RequestBody Record record, HttpServlet response) {
         em.persist(record);
+    }
+    
+    public static void main(String[] args) {
+        
     }
 }
