@@ -15,46 +15,10 @@
         http://www.springframework.org/schema/tx
        http://www.springframework.org/schema/tx/spring-tx.xsd
         " default-autowire="byName">
-    
-<!--
-	<bean id="placeholderConfig"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath://db.properties" />
-	</bean>
+
 	
-	<bean id="dao" class="com.xebia.rest.SqlDbDao">
-		<constructor-arg>
-			<value>localhost</value>
-		</constructor-arg>
-	</bean>
--->
-	<context:component-scan base-package="com.xebia.rest" />
-	<mvc:annotation-driven />
 	<context:annotation-config />
-
-<!--    <bean id="blogRepository" class="com.xebia.blogr.mongo.MongoBlogRepository"/>-->
-
-    <bean id="messageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-        <property name="messageConverters">
-            <list>
-                <!-- Support JSON -->
-                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
-            </list>
-        </property>
-    </bean>
-    <bean id="exceptionMessageAdapter" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
-        <property name="messageConverters">
-            <list>
-                <!-- Support JSON -->
-                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
-            </list>
-        </property>
-    </bean>
-
-
- 
-    <!-- JPA -->
-    <!-- TODO use property file for db specific settings -->
+	
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
     <tx:annotation-driven />
     <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/> 
