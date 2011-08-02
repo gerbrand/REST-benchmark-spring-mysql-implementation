@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -28,62 +29,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.xebia.rest.DatabasLoader;
 import com.xebia.rest.model.Record;
 
 @Controller
 public class Service {
     private static final Logger log=LoggerFactory.getLogger(Service.class);
     
-    private static final int COMMIT_THRESHOLD=250; //what would an optional value be?
+    
     @PersistenceContext
     private EntityManager em;
-    @Resource
-    private PlatformTransactionManager txManager;
+    
+    @Autowired
+    private DatabasLoader databaseLoader;
 
     @PostConstruct
     public void buildDatabase() throws Exception {
-        
         File dataFile = new File("/tmp/data.json");
+
         if (dataFile.exists()) {
-            log.info("Going to read "+dataFile.getAbsoluteFile());
-            BufferedReader br = new BufferedReader(new FileReader(dataFile));
-            int lines=0;
-            long start=System.currentTimeMillis();
-
-            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-         // explicitly setting the transaction name is something that can only be done programmatically
-         def.setName("importTx");
-         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-
-         TransactionStatus status = txManager.getTransaction(def);
-         
-         try {
-                for (String line = br.readLine(); line != null; line = br.readLine()) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    Record record = mapper.readValue(line, Record.class);
-                    em.merge(record);
-                    lines++;
-                    if (lines%COMMIT_THRESHOLD==0) {
-                        txManager.commit(status); //in between commits
-                        log.debug("Wrote "+lines+" lines");
-                    }
-                }
-                if (lines%COMMIT_THRESHOLD!=0) {
-                    txManager.commit(status);
-                }
-                log.info("File "+dataFile.getAbsolutePath()+" is imported, you may remove the file.");
-//                dataFile.renameTo(new File(dataFile.getParentFile(),"data"+DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date())+".json"));
-            } catch (IOException e) {
-                log.error("Got "+e.getMessage()+" after "+lines+" lines.");
-                txManager.rollback(status);
-                throw new RuntimeException(e);
-            } finally {
-                long elapsed=(System.currentTimeMillis()-start)/1000l;
-                log.info("Finished reading after "+elapsed+" seconds");
-            }
+            databaseLoader.importData(dataFile);
         } else {
-            log.info("If you want to read initial data, create a file named "+dataFile.getAbsolutePath());
+            log.info("If you want to read initial data, create a file named " + dataFile.getAbsolutePath());
         }
+
     }
     
     

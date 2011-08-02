@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xebia.rest.model.Record;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/testApplicationContext.xml"} )
+@ContextConfiguration(locations={"/StandAloneApplicationContext.xml"} )
 public class PersistenceTest {
 
     @PersistenceContext
