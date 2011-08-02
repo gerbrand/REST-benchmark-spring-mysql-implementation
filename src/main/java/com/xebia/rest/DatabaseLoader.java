@@ -27,8 +27,8 @@ import com.xebia.rest.model.Record;
  * Created by Frank Visser User: frank Date: 7/19/11 Time: 7:14 PM
  */
 @Component
-public class DatabasLoader {
-    private static final Logger log = LoggerFactory.getLogger(DatabasLoader.class);
+public class DatabaseLoader {
+    private static final Logger log = LoggerFactory.getLogger(DatabaseLoader.class);
     private static final int COMMIT_THRESHOLD = 250; // what would an optional
                                                      // value be?
     @PersistenceContext
@@ -88,7 +88,7 @@ public class DatabasLoader {
         } else {
             f="src/main/resources/data.json";
         }
-        DatabasLoader loader = context.getBean(DatabasLoader.class);
+        DatabaseLoader loader = context.getBean(DatabaseLoader.class);
         File dataFile = new File(f);
         loader.importData(dataFile);
     }

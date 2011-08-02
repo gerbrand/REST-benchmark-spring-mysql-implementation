@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.xebia.rest.DatabasLoader;
+import com.xebia.rest.DatabaseLoader;
 import com.xebia.rest.model.Record;
 
 @Controller
@@ -41,7 +41,7 @@ public class Service {
     private EntityManager em;
     
     @Autowired
-    private DatabasLoader databaseLoader;
+    private DatabaseLoader databaseLoader;
 
     @PostConstruct
     public void buildDatabase() throws Exception {
