@@ -82,9 +82,14 @@ public class DatabasLoader {
 
     public static void main(String args[]) throws FileNotFoundException {
         ApplicationContext context = new ClassPathXmlApplicationContext("/StandAloneApplicationContext.xml");
-
+        final String f;
+        if (args.length>0) {
+            f=args[0];
+        } else {
+            f="src/main/resources/data.json";
+        }
         DatabasLoader loader = context.getBean(DatabasLoader.class);
-        File dataFile = new File("src/main/resources/data.json");
+        File dataFile = new File(f);
         loader.importData(dataFile);
     }
 
