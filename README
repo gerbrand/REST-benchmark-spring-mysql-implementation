@@ -2,7 +2,7 @@ REST service benchmark contest implementation project using MySQL and JPA.
 
 Requirements:
 - Install mysql.
-- Create initial database and modify properties to point to your new database.
+- Create initial database and modify properties in mysqlContext.xml to point to your new database.
 - Java 6 and Maven
 
 Run with
